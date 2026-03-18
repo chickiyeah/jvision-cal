@@ -8,17 +8,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
-        body { font-family: 'Pretendard', sans-serif; }
+        body { font-family: 'Pretendard', sans-serif; letter-spacing: -0.02em; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-        .day-cell { min-height: 100px; border: 0.5px solid #f1f5f9; }
-        .event-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 2px; }
+        .day-cell { min-height: 110px; border: 0.5px solid #f1f5f9; position: relative; }
+        .event-dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; margin-right: 2px; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen">
 
-    <nav class="bg-white border-b sticky top-0 z-20 shadow-sm">
+    <nav class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-30 shadow-sm">
         <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-extrabold text-blue-600 tracking-tight">📅 2026 학사일정</h1>
+            <h1 class="text-xl font-extrabold text-blue-600">📅 2026 학사일정</h1>
             <div class="flex bg-slate-100 p-1 rounded-xl">
                 <button id="viewListBtn" onclick="switchView('list')" class="px-4 py-1.5 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-blue-600">리스트형</button>
                 <button id="viewCalBtn" onclick="switchView('cal')" class="px-4 py-1.5 rounded-lg text-sm font-bold transition-all text-slate-500">달력형</button>
@@ -29,35 +29,35 @@
     <main class="max-w-4xl mx-auto px-4 mt-6">
         
         <div id="searchContainer" class="relative mb-6">
-            <input type="text" id="searchInput" placeholder="일정 검색 (시험, 수강신청 등)..." 
-                class="w-full pl-12 pr-4 py-4 rounded-2xl bg-white border-none shadow-md focus:ring-2 focus:ring-blue-500 outline-none text-lg">
+            <input type="text" id="searchInput" placeholder="'시험', '수강', '휴일', '행사' 등으로 검색..." 
+                class="w-full pl-12 pr-4 py-4 rounded-2xl bg-white border-none shadow-lg focus:ring-2 focus:ring-blue-500 outline-none text-lg transition-all">
             <i class="fa-solid fa-search absolute left-5 top-5 text-slate-300"></i>
         </div>
 
-        <div id="listView" class="space-y-3 pb-10"></div>
+        <div id="listView" class="space-y-3 pb-20"></div>
 
-        <div id="calView" class="hidden pb-10">
+        <div id="calView" class="hidden pb-20">
             <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
-                <div class="flex justify-between items-center p-6 border-b">
-                    <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-100 rounded-full transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
-                    <h2 id="currentMonthYear" class="text-xl font-bold text-slate-800">2026년 3월</h2>
-                    <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-100 rounded-full transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="flex justify-between items-center p-6 bg-slate-50 border-b">
+                    <button onclick="changeMonth(-1)" class="w-10 h-10 flex items-center justify-center hover:bg-white rounded-full transition-all border shadow-sm"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h2 id="currentMonthYear" class="text-xl font-black text-slate-800">2026년 3월</h2>
+                    <button onclick="changeMonth(1)" class="w-10 h-10 flex items-center justify-center hover:bg-white rounded-full transition-all border shadow-sm"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
-                <div class="calendar-grid bg-slate-50 text-center font-bold text-xs text-slate-400 py-3 border-b">
-                    <div class="text-red-500 uppercase">Sun</div><div class="uppercase">Mon</div><div class="uppercase">Tue</div><div class="uppercase">Wed</div><div class="uppercase">Thu</div><div class="uppercase">Fri</div><div class="text-blue-500 uppercase">Sat</div>
+                <div class="calendar-grid bg-white text-center font-bold text-[10px] text-slate-400 py-3 border-b uppercase tracking-widest">
+                    <div class="text-red-400">Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div class="text-blue-400">Sat</div>
                 </div>
-                <div id="calendarDays" class="calendar-grid bg-white">
-                    </div>
+                <div id="calendarDays" class="calendar-grid bg-white"></div>
             </div>
-            <div id="dayDetail" class="mt-6 p-6 bg-blue-50 rounded-2xl hidden">
-                <h4 id="detailDate" class="font-bold text-blue-800 mb-3 underline decoration-blue-200">일정 상세</h4>
+            
+            <div id="dayDetail" class="mt-6 p-6 bg-white rounded-2xl shadow-md border border-blue-50 hidden animate-in fade-in duration-300">
+                <h4 id="detailDate" class="font-black text-slate-800 mb-4 border-l-4 border-blue-500 pl-3">일정 상세</h4>
                 <div id="detailContent" class="space-y-2"></div>
             </div>
         </div>
     </main>
 
     <script>
-        // 전체 데이터 (요청하신 대로 이미지 전체 데이터 반영)
+        // 이미지의 모든 데이터 텍스트화 (키워드: 학사, 수강, 시험, 행사, 성적, 입시, 휴일)
          const rawData = [
             // 1학기 일정 (이미지 2)
             { s: "2025-12-29", e: "2026-01-14", t: "정시모집 원서접수", c: "입시" },
@@ -80,7 +80,7 @@
             { s: "2026-04-23", e: "", t: "1학기 수업일수 2/4선", c: "학사" },
             { s: "2026-05-01", e: "", t: "근로자의 날 / 개교기념일 (휴업)", c: "휴일" },
             { s: "2026-05-05", e: "", t: "어린이날 (휴업)", c: "휴일" },
-            { s: "2026-05-13", e: "2026-05-14", t: "비전축제 (휴업)", c: "행사" },
+            { s: "2026-05-13", e: "2026-05-14", t: "체육대회 (휴업)", c: "행사" },
             { s: "2026-05-21", e: "", t: "1학기 수업일수 3/4선", c: "학사" },
             { s: "2026-05-25", e: "", t: "석가탄신일 대체휴업일 (휴업)", c: "휴일" },
             { s: "2026-06-03", e: "", t: "지방선거 (휴업)", c: "휴일" },
@@ -126,29 +126,51 @@
             { s: "2027-02-04", e: "", t: "전기 학위수여식", c: "행사" }
         ];
 
-
-        let currentView = 'list';
-        let calDate = new Date(2026, 2, 1); // 2026년 3월부터 시작
+        let calDate = new Date(2026, 2, 1); // 초기값 3월
 
         function switchView(view) {
-            currentView = view;
             const isList = view === 'list';
             document.getElementById('listView').classList.toggle('hidden', !isList);
             document.getElementById('searchContainer').classList.toggle('hidden', !isList);
             document.getElementById('calView').classList.toggle('hidden', isList);
             
-            // 버튼 스타일 업데이트
             document.getElementById('viewListBtn').className = isList ? "px-4 py-1.5 rounded-lg text-sm font-bold bg-white shadow-sm text-blue-600" : "px-4 py-1.5 rounded-lg text-sm font-bold text-slate-500";
             document.getElementById('viewCalBtn').className = !isList ? "px-4 py-1.5 rounded-lg text-sm font-bold bg-white shadow-sm text-blue-600" : "px-4 py-1.5 rounded-lg text-sm font-bold text-slate-500";
-            
             if(!isList) renderCalendar();
         }
 
-        function changeMonth(diff) {
-            calDate.setMonth(calDate.getMonth() + diff);
-            renderCalendar();
+        // 핵심 업데이트: 카테고리(c)와 제목(t) 모두 검색
+        function renderList(filter = "") {
+            const listContainer = document.getElementById('listView');
+            const f = filter.toLowerCase();
+            const filtered = rawData.filter(item => 
+                item.t.toLowerCase().includes(f) || item.c.toLowerCase().includes(f)
+            );
+
+            listContainer.innerHTML = filtered.map(item => `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center hover:ring-2 hover:ring-blue-100 transition-all">
+                    <div>
+                        <span class="px-2 py-1 rounded-md text-[10px] font-bold ${getCategoryColor(item.c)} mb-2 inline-block">${item.c}</span>
+                        <h3 class="text-lg font-bold text-slate-800">${item.t}</h3>
+                        <p class="text-slate-400 text-sm font-medium mt-1"><i class="fa-regular fa-clock mr-1"></i> ${item.s}${item.e ? ' ~ ' + item.e : ''}</p>
+                    </div>
+                    <button onclick="window.open('https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.t)}&dates=${item.s.replace(/-/g,'')}/${(item.e||item.s).replace(/-/g,'')}', '_blank')" 
+                        class="bg-blue-50 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            `).join('');
         }
 
+        function getCategoryColor(c) {
+            switch(c) {
+                case '시험': return 'bg-red-50 text-red-500';
+                case '수강': return 'bg-emerald-50 text-emerald-600';
+                case '휴일': return 'bg-orange-50 text-orange-600';
+                case '행사': return 'bg-purple-50 text-purple-600';
+                default: return 'bg-slate-100 text-slate-500';
+            }
+        }
+
+        // 달력 로직 (기존 유지 및 개선)
         function renderCalendar() {
             const year = calDate.getFullYear();
             const month = calDate.getMonth();
@@ -159,75 +181,34 @@
             const calDays = document.getElementById('calendarDays');
             calDays.innerHTML = "";
 
-            // 빈 칸 (이전 달 날짜 공간)
-            for (let i = 0; i < firstDay; i++) {
-                const div = document.createElement('div');
-                div.className = "day-cell bg-slate-50/50";
-                calDays.appendChild(div);
-            }
+            for (let i = 0; i < firstDay; i++) calDays.appendChild(Object.assign(document.createElement('div'), {className: 'day-cell bg-slate-50/30'}));
 
-            // 날짜 칸 생성
             for (let d = 1; d <= lastDate; d++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const dayEvents = rawData.filter(item => {
-                    const start = item.s;
-                    const end = item.e || item.s;
-                    return dateStr >= start && dateStr <= end;
-                });
-
+                const dayEvents = rawData.filter(item => dateStr >= item.s && dateStr <= (item.e || item.s));
                 const div = document.createElement('div');
-                div.className = `day-cell p-2 border-r border-b cursor-pointer hover:bg-blue-50 transition-colors ${d === new Date().getDate() && month === new Date().getMonth() ? 'bg-yellow-50' : ''}`;
+                div.className = "day-cell p-2 hover:bg-slate-50 transition-colors cursor-pointer border-r border-b";
                 div.onclick = () => showDayDetail(dateStr, dayEvents);
                 
-                let dots = dayEvents.map(e => {
-                    let color = "bg-blue-400";
-                    if(e.c === "시험") color = "bg-red-400";
-                    if(e.c === "휴일") color = "bg-orange-400";
-                    return `<span class="event-dot ${color}"></span>`;
-                }).join('');
-
-                div.innerHTML = `
-                    <div class="text-sm font-medium ${new Date(year, month, d).getDay() === 0 ? 'text-red-500' : ''}">${d}</div>
-                    <div class="mt-1 flex flex-wrap">${dots}</div>
-                `;
+                let dots = dayEvents.map(e => `<span class="event-dot ${e.c==='시험'?'bg-red-400':e.c==='휴일'?'bg-orange-400':'bg-blue-400'}"></span>`).join('');
+                div.innerHTML = `<div class="text-xs font-bold ${new Date(year, month, d).getDay()===0?'text-red-500':''}">${d}</div><div class="mt-1 flex flex-wrap gap-0.5">${dots}</div>`;
                 calDays.appendChild(div);
             }
         }
 
         function showDayDetail(date, events) {
             const detailBox = document.getElementById('dayDetail');
-            const content = document.getElementById('detailContent');
-            document.getElementById('detailDate').innerText = `${date} 일정 상세`;
-            
-            if (events.length === 0) {
-                content.innerHTML = "<p class='text-slate-400 text-sm'>일정이 없습니다.</p>";
-            } else {
-                content.innerHTML = events.map(e => `
-                    <div class="bg-white p-3 rounded-xl shadow-sm border border-blue-100 flex justify-between items-center">
-                        <span class="font-bold text-slate-700">${e.t}</span>
-                        <span class="text-[10px] font-bold bg-blue-100 text-blue-600 px-2 py-1 rounded-md uppercase">${e.c}</span>
-                    </div>
-                `).join('');
-            }
+            document.getElementById('detailDate').innerText = `${date} 일정`;
+            document.getElementById('detailContent').innerHTML = events.length ? events.map(e => `
+                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <span class="font-bold text-slate-700">${e.t}</span>
+                    <span class="text-[10px] font-black px-2 py-1 rounded-lg ${getCategoryColor(e.c)}">${e.c}</span>
+                </div>
+            `).join('') : "<p class='text-slate-400 text-sm'>일정이 없습니다.</p>";
             detailBox.classList.remove('hidden');
         }
 
-        // 리스트형 렌더링 (기존 로직 유지)
-        function renderList(filter = "") {
-            const listContainer = document.getElementById('listView');
-            const filtered = rawData.filter(item => item.t.includes(filter));
-            listContainer.innerHTML = filtered.map(item => `
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center hover:shadow-md transition-all">
-                    <div>
-                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-500 uppercase tracking-wider">${item.c}</span>
-                        <h3 class="text-lg font-bold text-slate-800 mt-1">${item.t}</h3>
-                        <p class="text-slate-400 text-sm mt-1">${item.s} ${item.e ? '~ ' + item.e : ''}</p>
-                    </div>
-                    <button onclick="window.open('https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.t)}&dates=${item.s.replace(/-/g,'')}/${(item.e||item.s).replace(/-/g,'')}', '_blank')" 
-                        class="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-600 hover:text-white transition-all">추가</button>
-                </div>
-            `).join('');
-        }
+        function changeMonth(n) { calDate.setMonth(calDate.getMonth() + n); renderCalendar(); }
 
         document.getElementById('searchInput').addEventListener('input', (e) => renderList(e.target.value));
         window.onload = () => renderList();
