@@ -190,7 +190,7 @@
                 div.className = "day-cell p-2 hover:bg-slate-50 transition-colors cursor-pointer border-r border-b";
                 div.onclick = () => showDayDetail(dateStr, dayEvents);
                 
-                let dots = dayEvents.map(e => `<span class="event-dot ${e.c==='시험'?'bg-red-400':e.c==='휴일'?'bg-orange-400':e.c==='휴일'?'bg-purple-400':'bg-blue-400'}"></span>`).join('');
+                let dots = dayEvents.map(e => `<span class="event-dot ${e.c==='시험'?'bg-red-400':e.c==='휴일'?'bg-orange-400':e.c==='행사'?'bg-purple-400':'bg-blue-400'}"></span>`).join('');
                 div.innerHTML = `<div class="text-xs font-bold ${new Date(year, month, d).getDay()===0?'text-red-500':''}">${d}</div><div class="mt-1 flex flex-wrap gap-0.5">${dots}</div>`;
                 calDays.appendChild(div);
             }
